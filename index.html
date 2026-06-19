@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Storefront — Build Your Online Store</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#F8FAFC}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  button:hover{opacity:.9}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:#f1f5f9}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const C = {
+  navy:"#0A0F1E",navyMid:"#111827",navySoft:"#1E2A3B",
+  indigo:"#4F46E5",indigoBright:"#6366F1",indigoLight:"#818CF8",
+  amber:"#F59E0B",teal:"#0EA5E9",green:"#10B981",red:"#EF4444",
+  slate50:"#F8FAFC",slate100:"#F1F5F9",slate200:"#E2E8F0",
+  slate400:"#94A3B8",slate500:"#64748B",slate600:"#475569",
+  slate700:"#334155",slate800:"#1E293B",slate900:"#0F172A",white:"#FFFFFF",
+};
+
+const ORDERS=[
+  {id:"#ORD-4821",customer:"Emma Wilson",product:"Air Max Pro",amount:129.99,status:"Delivered",date:"Jun 14"},
+  {id:"#ORD-4820",customer:"James Carter",product:"Leather Wallet",amount:49.99,status:"Processing",date:"Jun 14"},
+  {id:"#ORD-4819",customer:"Sofia Martinez",product:"Silk Scarf",amount:89.00,status:"Shipped",date:"Jun 13"},
+  {id:"#ORD-4818",customer:"Liam Johnson",product:"Smart Watch X",amount:349.00,status:"Delivered",date:"Jun 13"},
+  {id:"#ORD-4817",customer:"Aria Chen",product:"Canvas Tote",amount:34.50,status:"Cancelled",date:"Jun 12"},
+];
+const PRODUCTS=[
+  {id:1,name:"Air Max Pro",price:129.99,stock:45,category:"Footwear",status:"Active",img:"👟"},
+  {id:2,name:"Smart Watch X",price:349.00,stock:12,category:"Electronics",status:"Active",img:"⌚"},
+  {id:3,name:"Silk Scarf",price:89.00,stock:0,category:"Accessories",status:"Out of Stock",img:"🧣"},
+  {id:4,name:"Leather Wallet",price:49.99,stock:78,category:"Accessories",status:"Active",img:"👛"},
+  {id:5,name:"Canvas Tote",price:34.50,stock:5,category:"Bags",status:"Low Stock",img:"👜"},
+];
+const REVENUE=[28400,32100,29800,41200,38900,45600,52300,48700,55900,61200,58400,67800];
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const THEMES=[
+  {id:"aurora",name:"Aurora",primary:"#4F46E5",bg:"#F8FAFC",preview:"linear-gradient(135deg,#4F46E5,#818CF8)"},
+  {id:"obsidian",name:"Obsidian",primary:"#0A0F1E",bg:"#F1F5F9",preview:"linear-gradient(135deg,#0A0F1E,#334155)"},
+  {id:"ember",name:"Ember",primary:"#DC2626",bg:"#FFF7ED",preview:"linear-gradient(135deg,#DC2626,#F59E0B)"},
+  {id:"mint",name:"Mint",primary:"#059669",bg:"#ECFDF5",preview:"linear-gradient(135deg,#059669,#0EA5E9)"},
+];
+const FAQS=[
+  {q:"Is there a free trial?",a:"Yes — every plan starts with a 14-day free trial. No credit card required."},
+  {q:"Can I switch plans later?",a:"Absolutely. You can upgrade or downgrade at any time from your billing settings."},
+  {q:"What payment methods do you support?",a:"We support all major credit/debit cards plus crypto payments including Bitcoin, Ethereum, and USDT."},
+  {q:"Do you charge transaction fees?",a:"Starter: 2%. Pro: 0.5%. Enterprise: 0%. Simple and transparent."},
+  {q:"Can I use my own domain?",a:"Yes. All plans support custom domains with free SSL included."},
+];
+
+const statusColor=(s)=>({
+  "Active":{bg:"#D1FAE5",text:"#065F46"},"Delivered":{bg:"#D1FAE5",text:"#065F46"},
+  "Shipped":{bg:"#DBEAFE",text:"#1E40AF"},"Processing":{bg:"#FEF3C7",text:"#92400E"},
+  "Cancelled":{bg:"#FEE2E2",text:"#991B1B"},"Out of Stock":{bg:"#FEE2E2",text:"#991B1B"},
+  "Low Stock":{bg:"#FEF3C7",text:"#92400E"},
+}[s]||{bg:"#F1F5F9",text:"#475569"});
+
+function Badge({status}){
+  const c=statusColor(status);
+  return <span style={{background:c.bg,color:c.text,fontSize:11,fontWeight:600,borderRadius:6,padding:"2px 8px"}}>{status}</span>;
+}
+
+function Btn({children,variant="primary",onClick,style={},size="md"}){
+  const base={border:"none",cursor:"pointer",fontWeight:600,borderRadius:10,transition:"all .18s",
+    display:"inline-flex",alignItems:"center",gap:6,fontFamily:"inherit",
+    fontSize:size==="sm"?13:size==="lg"?16:14,
+    padding:size==="sm"?"6px 14px":size==="lg"?"14px 28px":"9px 18px"};
+  const variants={
+    primary:{background:C.indigo,color:C.white},
+    ghost:{background:"transparent",color:C.slate600,border:`1px solid ${C.slate200}`},
+    danger:{background:"#FEE2E2",color:"#991B1B"},
+  };
+  return <button style={{...base,...variants[variant],...style}} onClick={onClick}>{children}</button>;
+}
+
+function Card({children,style={},hover=false}){
+  const [h,setH]=useState(false);
+  return <div onMouseEnter={()=>hover&&setH(true)} onMouseLeave={()=>hover&&setH(false)}
+    style={{background:C.white,borderRadius:16,border:`1px solid ${C.slate200}`,
+      boxShadow:h?"0 12px 40px rgba(0,0,0,.10)":"0 1px 4px rgba(0,0,0,.05)",
+      transform:h?"translateY(-2px)":"none",transition:"all .2s",...style}}>{children}</div>;
+}
+
+function Input({label,type="text",placeholder,value,onChange,style={}}){
+  return <div style={{display:"flex",flexDirection:"column",gap:6,...style}}>
+    {label&&<label style={{fontSize:13,fontWeight:600,color:C.slate700}}>{label}</label>}
+    <input type={type} placeholder={placeholder} value={value} onChange={onChange}
+      style={{border:`1px solid ${C.slate200}`,borderRadius:10,padding:"10px 14px",
+        fontSize:14,color:C.slate800,outline:"none",fontFamily:"inherit",background:C.white}}/>
+  </div>;
+}
+
+function BarChart({data,labels}){
+  const max=Math.max(...data);
+  return <div style={{display:"flex",alignItems:"flex-end",gap:8,height:140,paddingTop:10}}>
+    {data.map((v,i)=>(
+      <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+        <div style={{width:"100%",background:`linear-gradient(to top,${C.indigo},${C.indigoLight})`,
+          borderRadius:"4px 4px 0 0",height:`${(v/max)*120}px`,minHeight:4}}/>
+        <span style={{fontSize:10,color:C.slate400,fontWeight:500}}>{labels[i]}</span>
+      </div>
+    ))}
+  </div>;
+}
+
+const NAV_ITEMS=[
+  {id:"overview",label:"Overview",icon:"⊞"},{id:"orders",label:"Orders",icon:"📦"},
+  {id:"products",label:"Products",icon:"🏷️"},{id:"customers",label:"Customers",icon:"👥"},
+  {id:"analytics",label:"Analytics",icon:"📊"},{id:"storebuilder",label:"Store Builder",icon:"🎨"},
+  {id:"payments",label:"Payments",icon:"💳"},{id:"settings",label:"Settings",icon:"⚙️"},
+];
+
+function Sidebar({active,setActive,collapsed,setCollapsed}){
+  return <aside style={{width:collapsed?64:228,minHeight:"100vh",background:C.navy,
+    display:"flex",flexDirection:"column",transition:"width .22s",
+    borderRight:"1px solid rgba(255,255,255,.05)",flexShrink:0}}>
+    <div style={{padding:"20px 16px 12px",borderBottom:"1px solid rgba(255,255,255,.07)",display:"flex",alignItems:"center",gap:10}}>
+      <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${C.indigo},${C.indigoBright})`,
+        display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>⚡</div>
+      {!collapsed&&<span style={{color:C.white,fontWeight:700,fontSize:16}}>Storefront</span>}
+    </div>
+    <nav style={{padding:"12px 8px",flex:1,display:"flex",flexDirection:"column",gap:2}}>
+      {NAV_ITEMS.map(item=>(
+        <button key={item.id} onClick={()=>setActive(item.id)}
+          style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:9,
+            border:"none",cursor:"pointer",transition:"all .15s",fontFamily:"inherit",
+            background:active===item.id?"rgba(99,102,241,.25)":"transparent",
+            color:active===item.id?C.indigoLight:"rgba(255,255,255,.55)",
+            fontWeight:active===item.id?600:400,fontSize:13,textAlign:"left",width:"100%",whiteSpace:"nowrap"}}>
+          <span style={{fontSize:16,flexShrink:0,width:20,textAlign:"center"}}>{item.icon}</span>
+          {!collapsed&&item.label}
+        </button>
+      ))}
+    </nav>
+    <button onClick={()=>setCollapsed(!collapsed)}
+      style={{margin:12,padding:10,borderRadius:9,border:"1px solid rgba(255,255,255,.09)",
+        background:"transparent",color:"rgba(255,255,255,.4)",cursor:"pointer",fontSize:14,
+        display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit"}}>
+      {collapsed?"→":"←"}
+    </button>
+  </aside>;
+}
+
+function OverviewPage(){
+  const stats=[
+    {label:"Total Revenue",value:"$67,821",change:"+12.4%",up:true},
+    {label:"Orders Today",value:"142",change:"+5.2%",up:true},
+    {label:"New Customers",value:"89",change:"-2.1%",up:false},
+    {label:"Conversion Rate",value:"3.8%",change:"+0.6%",up:true},
+  ];
+  return <div style={{padding:28,display:"flex",flexDirection:"column",gap:24}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <div>
+        <h1 style={{fontSize:22,fontWeight:700,color:C.slate900,margin:0}}>Store Overview</h1>
+        <p style={{fontSize:13,color:C.slate500,margin:"4px 0 0"}}>Friday, June 19, 2026</p>
+      </div>
+      <Btn size="sm">+ New Product</Btn>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
+      {stats.map((s,i)=>(
+        <Card key={i} style={{padding:"20px 20px 16px"}}>
+          <p style={{fontSize:11,color:C.slate500,fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",margin:"0 0 8px"}}>{s.label}</p>
+          <p style={{fontSize:26,fontWeight:700,color:C.slate900,margin:0}}>{s.value}</p>
+          <p style={{fontSize:12,color:s.up?C.green:C.red,fontWeight:600,margin:"4px 0 0"}}>{s.up?"▲":"▼"} {s.change}</p>
+        </Card>
+      ))}
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:16}}>
+      <Card style={{padding:20}}>
+        <h3 style={{fontSize:14,fontWeight:600,color:C.slate800,margin:"0 0 16px"}}>Monthly Revenue</h3>
+        <BarChart data={REVENUE} labels={MONTHS}/>
+      </Card>
+      <Card style={{padding:20}}>
+        <h3 style={{fontSize:14,fontWeight:600,color:C.slate800,margin:"0 0 16px"}}>Top Categories</h3>
+        {[["Footwear",42,C.indigo],["Electronics",28,C.teal],["Accessories",18,C.amber],["Bags",12,C.green]].map(([l,p,c])=>(
+          <div key={l} style={{marginBottom:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+              <span style={{fontSize:12,color:C.slate600}}>{l}</span>
+              <span style={{fontSize:12,color:C.slate800,fontWeight:600}}>{p}%</span>
+            </div>
+            <div style={{height:6,background:C.slate100,borderRadius:4}}>
+              <div style={{width:`${p}%`,height:"100%",borderRadius:4,background:c}}/>
+            </div>
+          </div>
+        ))}
+      </Card>
+    </div>
+    <Card style={{padding:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <h3 style={{fontSize:14,fontWeight:600,color:C.slate800,margin:0}}>Recent Orders</h3>
+      </div>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+        <thead><tr>
+          {["Order","Customer","Product","Amount","Status","Date"].map(h=>(
+            <th key={h} style={{textAlign:"left",padding:"8px 0",color:C.slate400,fontWeight:600,fontSize:11,textTransform:"uppercase",borderBottom:`1px solid ${C.slate100}`}}>{h}</th>
+          ))}
+        </tr></thead>
+        <tbody>
+          {ORDERS.slice(0,4).map((o,i)=>(
+            <tr key={i} style={{borderBottom:`1px solid ${C.slate100}`}}>
+              <td style={{padding:"11px 0",color:C.indigoBright,fontWeight:600}}>{o.id}</td>
+              <td style={{padding:"11px 0",color:C.slate800}}>{o.customer}</td>
+              <td style={{padding:"11px 0",color:C.slate600}}>{o.product}</td>
+              <td style={{padding:"11px 0",color:C.slate900,fontWeight:600}}>${o.amount}</td>
+              <td style={{padding:"11px 0"}}><Badge status={o.status}/></td>
+              <td style={{padding:"11px 0",color:C.slate400}}>{o.date}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
+  </div>;
+}
+
+function OrdersPage(){
+  const [search,setSearch]=useState("");
+  const filtered=ORDERS.filter(o=>o.customer.toLowerCase().includes(search.toLowerCase())||o.id.includes(search));
+  return <div style={{padding:28}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+      <h1 style={{fontSize:22,fontWeight:700,color:C.slate900,margin:0}}>Orders</h1>
+      <input placeholder="Search…" value={search} onChange={e=>setSearch(e.target.value)}
+        style={{border:`1px solid ${C.slate200}`,borderRadius:9,padding:"7px 14px",fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+    </div>
+    <Card>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+        <thead><tr style={{borderBottom:`1px solid ${C.slate100}`}}>
+          {["Order ID","Customer","Product","Amount","Status","Date"].map(h=>(
+            <th key={h} style={{textAlign:"left",padding:"12px 16px",color:C.slate400,fontWeight:600,fontSize:11,textTransform:"uppercase"}}>{h}</th>
+          ))}
+        </tr></thead>
+        <tbody>
+          {filtered.map((o,i)=>(
+            <tr key={i} style={{borderBottom:`1px solid ${C.slate100}`}}>
+              <td style={{padding:"13px 16px",color:C.indigoBright,fontWeight:700}}>{o.id}</td>
+              <td style={{padding:"13px 16px",color:C.slate800}}>{o.customer}</td>
+              <td style={{padding:"13px 16px",color:C.slate600}}>{o.product}</td>
+              <td style={{padding:"13px 16px",color:C.slate900,fontWeight:700}}>${o.amount}</td>
+              <td style={{padding:"13px 16px"}}><Badge status={o.status}/></td>
+              <td style={{padding:"13px 16px",color:C.slate400}}>{o.date}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
+  </div>;
+}
+
+function ProductsPage(){
+  const [products,setProducts]=useState(PRODUCTS);
+  const [showAdd,setShowAdd]=useState(false);
+  const [np,setNp]=useState({name:"",price:"",stock:"",category:""});
+  const add=()=>{
+    if(!np.name)return;
+    setProducts(p=>[...p,{id:p.length+1,...np,status:"Active",img:"📦"}]);
+    setNp({name:"",price:"",stock:"",category:""});setShowAdd(false);
+  };
+  return <div style={{padding:28}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+      <h1 style={{fontSize:22,fontWeight:700,color:C.slate900,margin:0}}>Products</h1>
+      <Btn onClick={()=>setShowAdd(!showAdd)}>+ Add Product</Btn>
+    </div>
+    {showAdd&&<Card style={{padding:20,marginBottom:20,border:`1px solid ${C.indigoLight}`}}>
+      <h3 style={{margin:"0 0 16px",fontSize:15,fontWeight:700}}>New Product</h3>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
+        <Input label="Name" placeholder="Product name" value={np.name} onChange={e=>setNp(p=>({...p,name:e.target.value}))}/>
+        <Input label="Price" placeholder="0.00" value={np.price} onChange={e=>setNp(p=>({...p,price:e.target.value}))}/>
+        <Input label="Stock" placeholder="0" value={np.stock} onChange={e=>setNp(p=>({...p,stock:e.target.value}))}/>
+        <Input label="Category" placeholder="e.g. Footwear" value={np.category} onChange={e=>setNp(p=>({...p,category:e.target.value}))}/>
+      </div>
+      <div style={{display:"flex",gap:8,marginTop:14}}>
+        <Btn onClick={add}>Save</Btn>
+        <Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn>
+      </div>
+    </Card>}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:16}}>
+      {products.map(p=>(
+        <Card key={p.id} hover style={{padding:20}}>
+          <div style={{fontSize:40,textAlign:"center",background:C.slate100,borderRadius:10,padding:"14px 0",marginBottom:10}}>{p.img}</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
+            <h4 style={{margin:0,fontSize:14,fontWeight:700,color:C.slate900}}>{p.name}</h4>
+            <Badge status={p.status}/>
+          </div>
+          <p style={{margin:"4px 0 8px",fontSize:12,color:C.slate400}}>{p.category}</p>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:18,fontWeight:700,color:C.slate900}}>${p.price}</span>
+            <span style={{fontSize:12,color:C.slate500}}>Stock: {p.stock}</span>
+          </div>
+        </Card>
+      ))}
+    </div>
+  </div>;
+}
+
+function PaymentsPage(){
+  const [tab,setTab]=useState("card");
+  const crypto={btc:"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",eth:"0x742d35Cc6634C0532925a3b8D4C9B7d3a1F2E89b",usdt:"TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE"};
+  return <div style={{padding:28}}>
+    <h1 style={{fontSize:22,fontWeight:700,color:C.slate900,margin:"0 0 24px"}}>Payments</h1>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
+      {[["Total Processed","$67,821",C.green],["Pending","$2,340",C.amber],["Refunded","$480",C.red],["Net Revenue","$64,001",C.indigo]].map(([l,v,c])=>(
+        <Card key={l} style={{padding:18}}>
+          <p style={{margin:"0 0 4px",fontSize:11,color:C.slate400,fontWeight:600}}>{l}</p>
+          <p style={{margin:0,fontSize:20,fontWeight:700,color:c}}>{v}</p>
+        </Card>
+      ))}
+    </div>
+    <Card style={{padding:24}}>
+      <h3 style={{margin:"0 0 16px",fontSize:15,fontWeight:700}}>Payment Methods</h3>
+      <div style={{display:"flex",gap:8,marginBottom:20}}>
+        {[["card","💳 Card"],["btc","₿ Bitcoin"],["eth","⟠ Ethereum"],["usdt","₮ USDT"]].map(([id,label])=>(
+          <button key={id} onClick={()=>setTab(id)}
+            style={{padding:"8px 14px",borderRadius:9,border:`1.5px solid ${tab===id?C.indigo:C.slate200}`,
+              background:tab===id?`${C.indigo}0F`:C.white,color:tab===id?C.indigo:C.slate600,
+              fontWeight:600,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>{label}</button>
+        ))}
+      </div>
+      {tab==="card"&&<div style={{display:"flex",flexDirection:"column",gap:12,maxWidth:400}}>
+        <Input label="Cardholder Name" placeholder="Jane Smith"/>
+        <Input label="Card Number" placeholder="•••• •••• •••• ••••"/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <Input label="Expiry" placeholder="MM/YY"/>
+          <Input label="CVV" placeholder="•••"/>
+        </div>
+        <Btn style={{marginTop:4}}>Pay $129.99 Securely 🔒</Btn>
+      </div>}
+      {(tab==="btc"||tab==="eth"||tab==="usdt")&&<div style={{background:C.slate50,borderRadius:12,padding:20,maxWidth:500}}>
+        <p style={{margin:"0 0 12px",fontSize:13,color:C.slate600}}>
+          Send <strong>{tab==="btc"?"0.00298 BTC":tab==="eth"?"0.0521 ETH":"129.99 USDT"}</strong> to:
+        </p>
+        <code style={{fontSize:12,wordBreak:"break-all",background:C.white,border:`1px solid ${C.slate200}`,
+          padding:"10px 12px",borderRadius:8,display:"block",color:C.slate700}}>{crypto[tab]}</code>
+        <div style={{marginTop:14,padding:"10px 14px",background:"#FEF3C7",borderRadius:8}}>
+          <p style={{margin:0,fontSize:12,color:"#92400E"}}>⏳ Awaiting confirmation (0/3 confirmations)</p>
+        </div>
+      </div>}
+    </Card>
+  </div>;
+}
+
+function StoreBuilderPage(){
+  const [theme,setTheme]=useState("aurora");
+  const [sections,setSections]=useState(["Hero Banner","Featured Products","Testimonials","Newsletter"]);
+  const [drag,setDrag]=useState(null);
+  const t=THEMES.find(x=>x.id===theme);
+  const move=(from,to)=>{const s=[...sections];const[i]=s.splice(from,1);s.splice(to,0,i);setSections(s);};
+  return <div style={{padding:28}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+      <h1 style={{fontSize:22,fontWeight:700,color:C.slate900,margin:0}}>Store Builder</h1>
+      <Btn size="sm">Publish Changes</Btn>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"280px 1fr",gap:20}}>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        <Card style={{padding:18}}>
+          <h3 style={{margin:"0 0 12px",fontSize:13,fontWeight:700,color:C.slate700,textTransform:"uppercase",letterSpacing:".05em"}}>Theme</h3>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {THEMES.map(t=>(
+              <div key={t.id} onClick={()=>setTheme(t.id)}
+                style={{borderRadius:10,padding:10,cursor:"pointer",border:`2px solid ${theme===t.id?C.indigo:C.slate200}`}}>
+                <div style={{height:32,borderRadius:6,background:t.preview,marginBottom:6}}/>
+                <p style={{margin:0,fontSize:12,fontWeight:600,color:C.slate700,textAlign:"center"}}>{t.name}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card style={{padding:18}}>
+          <h3 style={{margin:"0 0 10px",fontSize:13,fontWeight:700,color:C.slate700,textTransform:"uppercase",letterSpacing:".05em"}}>Sections</h3>
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            {sections.map((s,i)=>(
+              <div key={s} draggable onDragStart={()=>setDrag(i)} onDragOver={e=>e.preventDefault()} onDrop={()=>{if(drag!==null&&drag!==i)move(drag,i);setDrag(null);}}
+                style={{padding:"9px 12px",background:C.slate50,borderRadius:8,cursor:"grab",border:`1px solid ${C.slate200}`,
+                  display:"flex",alignItems:"center",gap:8,fontSize:13,color:C.slate700,fontWeight:500}}>
+                <span style={{color:C.slate300}}>⠿</span> {s}
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+      <Card style={{padding:0,overflow:"hidden",minHeight:400}}>
+        <div style={{background:C.slate800,padding:"10px 14px",display:"flex",alignItems:"center",gap:6}}>
+          {["#FF5F57","#FFBD2E","#28CA41"].map(c=><div key={c} style={{width:10,height:10,borderRadius:"50%",background:c}}/>)}
+          <div style={{flex:1,background:C.slate700,borderRadius:5,padding:"3px 10px",marginLeft:6,fontSize:11,color:C.slate400}}>mystore.storefront.io</div>
+        </div>
+        <div style={{background:t?.bg||C.white,minHeight:350}}>
+          <div style={{background:t?.primary||C.indigo,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{color:C.white,fontWeight:700,fontSize:14}}>My Store</span>
+            <div style={{display:"flex",gap:12}}>{["Home","Shop","About","Cart"].map(l=><span key={l} style={{color:"rgba(255,255,255,.8)",fontSize:11}}>{l}</span>)}</div>
+          </div>
+          <div style={{padding:"30px 20px",textAlign:"center",borderBottom:`1px solid ${C.slate200}`}}>
+            <h2 style={{fontSize:20,fontWeight:800,color:C.slate900,margin:"0 0 8px"}}>Summer Collection 2026</h2>
+            <p style={{fontSize:13,color:C.slate500,margin:"0 0 14px"}}>Fresh styles for the season</p>
+            <div style={{display:"inline-block",background:t?.primary||C.indigo,color:C.white,padding:"8px 18px",borderRadius:8,fontSize:12,fontWeight:600}}>Shop Now</div>
+          </div>
+          <div style={{padding:16,display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+            {["👟","⌚","👜"].map((e,i)=>(
+              <div key={i} style={{background:C.white,border:`1px solid ${C.slate200}`,borderRadius:10,padding:12,textAlign:"center"}}>
+                <div style={{fontSize:28}}>{e}</div>
+                <p style={{margin:"6px 0 2px",fontSize:11,fontWeight:600,color:C.slate800}}>Product {i+1}</p>
+                <p style={{margin:0,fontSize:11,color:C.slate500}}>$49.99</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    </div>
+  </div>;
+}
+
+function SettingsPage(){
+  const [name,setName]=useState("My Awesome Store");
+  const [saved,setSaved]=useState(false);
+  return <div style={{padding:28,maxWidth:680}}>
+    <h1 style={{fontSize:22,fontWeight:700,color:C.slate900,margin:"0 0 24px"}}>Settings</h1>
+    <Card style={{padding:24,marginBottom:16}}>
+      <h3 style={{margin:"0 0 16px",fontSize:14,fontWeight:700}}>General</h3>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        <Input label="Store Name" value={name} onChange={e=>setName(e.target.value)}/>
+        <Input label="Support Email" placeholder="hello@mystore.com"/>
+        <Btn onClick={()=>{setSaved(true);setTimeout(()=>setSaved(false),2000);}} style={{alignSelf:"flex-start"}}>
+          {saved?"✓ Saved!":"Save Changes"}
+        </Btn>
+      </div>
+    </Card>
+    <Card style={{padding:24,marginBottom:16}}>
+      <h3 style={{margin:"0 0 16px",fontSize:14,fontWeight:700}}>Plan</h3>
+      <div style={{background:C.slate50,borderRadius:10,padding:16,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div>
+          <p style={{margin:0,fontWeight:700,color:C.slate900}}>Pro Plan — $79/mo</p>
+          <p style={{margin:"2px 0 0",fontSize:12,color:C.slate500}}>Renews Jul 19, 2026</p>
+        </div>
+        <Badge status="Active"/>
+      </div>
+    </Card>
+  </div>;
+}
+
+function Dashboard({setPage}){
+  const [active,setActive]=useState("overview");
+  const [collapsed,setCollapsed]=useState(false);
+  const pages={overview:<OverviewPage/>,orders:<OrdersPage/>,products:<ProductsPage/>,
+    analytics:<OverviewPage/>,storebuilder:<StoreBuilderPage/>,
+    payments:<PaymentsPage/>,settings:<SettingsPage/>,customers:<OrdersPage/>};
+  return <div style={{display:"flex",minHeight:"100vh",background:C.slate50,fontFamily:"'Inter',-apple-system,sans-serif"}}>
+    <Sidebar active={active} setActive={setActive} collapsed={collapsed} setCollapsed={setCollapsed}/>
+    <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column"}}>
+      <header style={{height:56,background:C.white,borderBottom:`1px solid ${C.slate200}`,
+        display:"flex",alignItems:"center",padding:"0 20px",gap:12,position:"sticky",top:0,zIndex:10}}>
+        <div style={{flex:1}}>
+          <span style={{fontSize:13,color:C.slate500}}>{NAV_ITEMS.find(n=>n.id===active)?.icon} {NAV_ITEMS.find(n=>n.id===active)?.label}</span>
+        </div>
+        <button onClick={()=>setPage("landing")} style={{fontSize:12,color:C.slate500,background:"none",border:`1px solid ${C.slate200}`,borderRadius:7,padding:"5px 10px",cursor:"pointer",fontFamily:"inherit"}}>← Back to site</button>
+        <div style={{width:32,height:32,borderRadius:"50%",background:`linear-gradient(135deg,${C.indigo},${C.teal})`,display:"flex",alignItems:"center",justifyContent:"center",color:C.white,fontSize:13,fontWeight:700}}>J</div>
+      </header>
+      <main style={{flex:1,overflow:"auto"}}>{pages[active]}</main>
+    </div>
+  </div>;
+}
+
+function AuthPage({setPage}){
+  const [mode,setMode]=useState("login");
+  const [step,setStep]=useState(1);
+  if(mode==="signup"&&step===2){
+    return <div style={{minHeight:"100vh",background:`linear-gradient(135deg,${C.navy},${C.navySoft})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit",padding:20}}>
+      <div style={{width:"100%",maxWidth:420}}>
+        <div style={{textAlign:"center",marginBottom:28}}>
+          <div style={{width:44,height:44,borderRadius:12,background:`linear-gradient(135deg,${C.indigo},${C.indigoBright})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,margin:"0 auto 14px"}}>⚡</div>
+          <h2 style={{color:C.white,fontSize:22,fontWeight:700,margin:"0 0 6px"}}>Set up your store</h2>
+        </div>
+        <Card style={{padding:28}}>
+          <Input label="Store Name" placeholder="My Awesome Store" style={{marginBottom:14}}/>
+          <Input label="Store URL" placeholder="mystore" style={{marginBottom:6}}/>
+          <p style={{margin:"0 0 18px",fontSize:12,color:C.slate400}}>Your store: <strong>mystore.storefront.io</strong></p>
+          <Btn style={{width:"100%"}} onClick={()=>setPage("dashboard")}>Launch My Store 🚀</Btn>
+        </Card>
+      </div>
+    </div>;
+  }
+  return <div style={{minHeight:"100vh",background:`linear-gradient(135deg,${C.navy},${C.navySoft})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit",padding:20}}>
+    <div style={{width:"100%",maxWidth:380}}>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{width:44,height:44,borderRadius:12,background:`linear-gradient(135deg,${C.indigo},${C.indigoBright})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,margin:"0 auto 14px"}}>⚡</div>
+        <h2 style={{color:C.white,fontSize:22,fontWeight:700,margin:"0 0 6px"}}>{mode==="login"?"Welcome back":"Create your account"}</h2>
+      </div>
+      <Card style={{padding:28}}>
+        {mode==="signup"&&<Input label="Full Name" placeholder="Jane Smith" style={{marginBottom:14}}/>}
+        <Input label="Email" type="email" placeholder="you@example.com" style={{marginBottom:14}}/>
+        <Input label="Password" type="password" placeholder="••••••••" style={{marginBottom:18}}/>
+        <Btn style={{width:"100%"}} onClick={()=>mode==="signup"?setStep(2):setPage("dashboard")}>
+          {mode==="login"?"Sign In":"Create Account"}
+        </Btn>
+        <p style={{textAlign:"center",fontSize:13,color:C.slate500,margin:"18px 0 0"}}>
+          {mode==="login"?"Don't have an account? ":"Already have an account? "}
+          <button onClick={()=>setMode(mode==="login"?"signup":"login")}
+            style={{color:C.indigoBright,background:"none",border:"none",cursor:"pointer",fontWeight:600,fontSize:13,fontFamily:"inherit",padding:0}}>
+            {mode==="login"?"Sign up free":"Sign in"}
+          </button>
+        </p>
+      </Card>
+      <p style={{textAlign:"center",marginTop:16}}>
+        <button onClick={()=>setPage("landing")} style={{color:"rgba(255,255,255,.35)",background:"none",border:"none",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>← Back to home</button>
+      </p>
+    </div>
+  </div>;
+}
+
+function LandingPage({setPage}){
+  const [faqOpen,setFaqOpen]=useState(null);
+  const [annual,setAnnual]=useState(false);
+  const plans=[
+    {name:"Starter",price:annual?19:25,features:["Up to 100 products","2% transaction fee","Basic analytics","Email support"],cta:"Start free trial"},
+    {name:"Pro",price:annual?59:79,features:["Unlimited products","0.5% transaction fee","Advanced analytics","Priority support","Custom domain","API access"],cta:"Start free trial",popular:true},
+    {name:"Enterprise",price:annual?199:249,features:["Everything in Pro","0% transaction fee","Dedicated manager","Custom integrations","SLA guarantee"],cta:"Contact sales"},
+  ];
+  return <div style={{fontFamily:"'Inter',-apple-system,sans-serif",color:C.slate800}}>
+    {/* NAV */}
+    <nav style={{position:"sticky",top:0,zIndex:50,background:"rgba(255,255,255,.92)",backdropFilter:"blur(12px)",borderBottom:`1px solid ${C.slate100}`,padding:"0 6%"}}>
+      <div style={{maxWidth:1100,margin:"0 auto",display:"flex",alignItems:"center",height:62,gap:32}}>
+        <div style={{display:"flex",alignItems:"center",gap:9}}>
+          <div style={{width:30,height:30,borderRadius:7,background:`linear-gradient(135deg,${C.indigo},${C.indigoBright})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>⚡</div>
+          <span style={{fontWeight:800,fontSize:17,letterSpacing:"-.02em",color:C.slate900}}>Storefront</span>
+        </div>
+        <div style={{flex:1,display:"flex",gap:24}}>
+          {["Features","Pricing","Docs","Blog"].map(l=><span key={l} style={{fontSize:14,color:C.slate500,cursor:"pointer"}}>{l}</span>)}
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <Btn variant="ghost" size="sm" onClick={()=>setPage("auth")}>Sign in</Btn>
+          <Btn size="sm" onClick={()=>setPage("auth")}>Start free →</Btn>
+        </div>
+      </div>
+    </nav>
+    {/* HERO */}
+    <section style={{background:`linear-gradient(160deg,${C.navy} 0%,${C.navySoft} 60%,#1a1060 100%)`,padding:"90px 6% 80px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+      <div style={{maxWidth:760,margin:"0 auto",position:"relative"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(99,102,241,.15)",border:"1px solid rgba(99,102,241,.3)",borderRadius:20,padding:"5px 14px",marginBottom:24}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:C.indigoBright,display:"inline-block"}}/>
+          <span style={{fontSize:12,color:C.indigoLight,fontWeight:600}}>New: Crypto payments now live</span>
+        </div>
+        <h1 style={{fontSize:"clamp(36px,6vw,68px)",fontWeight:800,color:C.white,lineHeight:1.1,letterSpacing:"-.03em",margin:"0 0 20px"}}>
+          Build Your Online Store<br/>
+          <span style={{background:`linear-gradient(90deg,${C.indigoLight},${C.teal})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>in Minutes</span>
+        </h1>
+        <p style={{fontSize:"clamp(15px,2.5vw,18px)",color:"rgba(255,255,255,.6)",maxWidth:520,margin:"0 auto 36px",lineHeight:1.6}}>
+          The all-in-one commerce platform. Accept any payment, sell anywhere, scale without limits.
+        </p>
+        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+          <Btn size="lg" onClick={()=>setPage("auth")}>Start Free — No card needed</Btn>
+          <Btn size="lg" onClick={()=>setPage("dashboard")} style={{color:C.white,border:"1px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.07)"}}>View Demo →</Btn>
+        </div>
+        <p style={{fontSize:12,color:"rgba(255,255,255,.3)",marginTop:14}}>14-day free trial · No credit card · Cancel anytime</p>
+      </div>
+    </section>
+    {/* FEATURES */}
+    <section style={{padding:"80px 6%",background:C.white}}>
+      <div style={{maxWidth:1100,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:50}}>
+          <h2 style={{fontSize:"clamp(28px,4vw,40px)",fontWeight:800,color:C.slate900,margin:"0 0 14px",letterSpacing:"-.02em"}}>Everything you need to sell online</h2>
+          <p style={{fontSize:16,color:C.slate500}}>One platform. No plugins. No hidden fees.</p>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:20}}>
+          {[
+            {icon:"🏪",title:"Store Builder",desc:"Drag-and-drop editor with professional themes. Zero code required."},
+            {icon:"💳",title:"Any Payment",desc:"Cards, Apple Pay, Google Pay, Bitcoin, Ethereum, USDT and more."},
+            {icon:"📊",title:"Real Analytics",desc:"Revenue dashboards and conversion funnels that actually make sense."},
+            {icon:"📦",title:"Inventory & Orders",desc:"Track stock, manage fulfillment, keep customers updated."},
+            {icon:"🌐",title:"Custom Domain",desc:"Use your own domain. Free SSL included on every plan."},
+            {icon:"🚀",title:"Lightning Fast",desc:"Global CDN, sub-second storefronts, 99.99% uptime SLA."},
+          ].map(f=>(
+            <Card key={f.title} hover style={{padding:24}}>
+              <div style={{fontSize:32,marginBottom:14}}>{f.icon}</div>
+              <h3 style={{fontSize:16,fontWeight:700,color:C.slate900,margin:"0 0 8px"}}>{f.title}</h3>
+              <p style={{fontSize:14,color:C.slate500,margin:0,lineHeight:1.6}}>{f.desc}</p>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+    {/* PRICING */}
+    <section style={{padding:"80px 6%",background:C.slate50}}>
+      <div style={{maxWidth:1000,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:44}}>
+          <h2 style={{fontSize:"clamp(28px,4vw,40px)",fontWeight:800,color:C.slate900,margin:"0 0 14px",letterSpacing:"-.02em"}}>Simple, transparent pricing</h2>
+          <div style={{display:"inline-flex",background:C.slate200,borderRadius:10,padding:3,gap:2,marginTop:16}}>
+            {["Monthly","Annual (save 25%)"].map((l,i)=>(
+              <button key={l} onClick={()=>setAnnual(i===1)}
+                style={{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,
+                  background:annual===(i===1)?C.white:"transparent",color:annual===(i===1)?C.slate900:C.slate500,fontFamily:"inherit"}}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
+          {plans.map(p=>(
+            <Card key={p.name} style={{padding:28,position:"relative",border:p.popular?`2px solid ${C.indigo}`:`1px solid ${C.slate200}`}}>
+              {p.popular&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:C.indigo,color:C.white,fontSize:11,fontWeight:700,padding:"3px 14px",borderRadius:20}}>MOST POPULAR</div>}
+              <h3 style={{margin:"0 0 4px",fontSize:18,fontWeight:700,color:C.slate900}}>{p.name}</h3>
+              <div style={{margin:"12px 0 18px"}}>
+                <span style={{fontSize:40,fontWeight:800,color:C.slate900}}>${p.price}</span>
+                <span style={{fontSize:13,color:C.slate400}}>/mo</span>
+              </div>
+              <Btn onClick={()=>setPage("auth")} variant={p.popular?"primary":"ghost"} style={{width:"100%",marginBottom:20,justifyContent:"center"}}>{p.cta}</Btn>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {p.features.map(f=>(
+                  <div key={f} style={{display:"flex",gap:8,fontSize:13,color:C.slate700}}>
+                    <span style={{color:C.green,fontWeight:700}}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+    {/* FAQ */}
+    <section style={{padding:"80px 6%",background:C.white}}>
+      <div style={{maxWidth:680,margin:"0 auto"}}>
+        <h2 style={{fontSize:"clamp(28px,4vw,38px)",fontWeight:800,color:C.slate900,textAlign:"center",margin:"0 0 44px",letterSpacing:"-.02em"}}>Frequently asked questions</h2>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {FAQS.map((f,i)=>(
+            <Card key={i} style={{padding:0,overflow:"hidden"}}>
+              <button onClick={()=>setFaqOpen(faqOpen===i?null:i)}
+                style={{width:"100%",textAlign:"left",padding:"18px 22px",border:"none",background:"transparent",cursor:"pointer",
+                  display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:15,fontWeight:600,color:C.slate900,fontFamily:"inherit"}}>
+                {f.q}
+                <span style={{color:C.slate400,fontSize:18,transform:faqOpen===i?"rotate(45deg)":"none",transition:"transform .2s"}}>+</span>
+              </button>
+              {faqOpen===i&&<div style={{padding:"0 22px 18px",fontSize:14,color:C.slate600,lineHeight:1.65,borderTop:`1px solid ${C.slate100}`,paddingTop:14}}>{f.a}</div>}
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+    {/* CTA */}
+    <section style={{padding:"80px 6%",background:`linear-gradient(135deg,${C.navy},#1a1060)`}}>
+      <div style={{maxWidth:680,margin:"0 auto",textAlign:"center"}}>
+        <h2 style={{fontSize:"clamp(28px,4vw,44px)",fontWeight:800,color:C.white,margin:"0 0 16px",letterSpacing:"-.02em"}}>Ready to launch your store?</h2>
+        <p style={{fontSize:16,color:"rgba(255,255,255,.55)",margin:"0 0 34px"}}>Join 40,000+ merchants already selling with Storefront.</p>
+        <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+          <Btn size="lg" onClick={()=>setPage("auth")}>Start Free Trial</Btn>
+          <Btn size="lg" onClick={()=>setPage("dashboard")} style={{color:C.white,border:"1px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.07)"}}>See Live Demo</Btn>
+        </div>
+      </div>
+    </section>
+    {/* FOOTER */}
+    <footer style={{background:C.slate900,padding:"50px 6% 30px"}}>
+      <div style={{maxWidth:1100,margin:"0 auto"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+          <div style={{width:26,height:26,borderRadius:6,background:`linear-gradient(135deg,${C.indigo},${C.indigoBright})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>⚡</div>
+          <span style={{color:C.white,fontWeight:700,fontSize:15}}>Storefront</span>
+        </div>
+        <p style={{fontSize:13,color:"rgba(255,255,255,.3)",margin:"0 0 24px"}}>The modern commerce platform for ambitious brands.</p>
+        <div style={{borderTop:"1px solid rgba(255,255,255,.07)",paddingTop:22,display:"flex",justifyContent:"space-between"}}>
+          <span style={{fontSize:12,color:"rgba(255,255,255,.25)"}}>© 2026 Storefront Inc.</span>
+          <span style={{fontSize:12,color:"rgba(255,255,255,.25)"}}>Made with ⚡</span>
+        </div>
+      </div>
+    </footer>
+  </div>;
+}
+
+function App(){
+  const [page,setPage]=useState("landing");
+  if(page==="dashboard") return <Dashboard setPage={setPage}/>;
+  if(page==="auth") return <AuthPage setPage={setPage}/>;
+  return <LandingPage setPage={setPage}/>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
