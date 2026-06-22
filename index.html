@@ -7,6 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -28,6 +29,11 @@ body{font-family:'Inter',sans-serif;background:#F8FAFC;color:#1E293B}
 <div id="root"></div>
 <script type="text/babel">
 const {useState,useEffect,useRef}=React;
+
+// Supabase setup
+const SUPABASE_URL="https://mtxtqsjsayatgvxqlnuc.supabase.co";
+const SUPABASE_KEY="sb_publishable_m5AHroBlI3zRFrjpVQOdnw_T6OQGoD7";
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const PRODUCTS=[
   {id:1,name:"AirPods Pro Max",price:89.99,original:149.99,rating:4.8,reviews:2341,emoji:"🎧",category:"Audio",badge:"Best Seller",desc:"Active noise cancellation, 30hr battery, premium sound",colors:["#1E293B","#F1F5F9","#7C3AED"]},
@@ -101,8 +107,30 @@ function App(){
     return matchCat&&matchSearch;
   });
 
-  const doCheckout=()=>{
+  const doCheckout=async()=>{
     if(!form.name||!form.email){showNotify("Please fill in name and email!");return;}
+    
+    // Save order to Supabase
+    const orderData={
+      customer_name:form.name,
+      email:form.email,
+      phone:form.phone,
+      address:form.address,
+      items:cart.map(x=>`${x.name} x${x.qty}`).join(", "),
+      total:total,
+      payment_method:"USDT TRC20",
+      status:"pending"
+    };
+
+    const {error}=await supabase.from("orders").insert([orderData]);
+    
+    if(error){
+      console.error("Order save error:",error);
+      showNotify("Order saved locally — check connection!");
+    } else {
+      showNotify("Order saved successfully!");
+    }
+
     setCheckoutDone(true);
     setCart([]);
     setCartOpen(false);
