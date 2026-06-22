@@ -46,11 +46,14 @@ const saveOrder=async(orderData)=>{
       body:JSON.stringify(orderData)
     });
     const text=await res.text();
-    console.log("STATUS:",res.status);
-    console.log("SUPABASE:",text);
-    return res.ok;
+    if(!res.ok){
+      // Show error visibly on screen
+      alert("ERROR "+res.status+": "+text);
+      return false;
+    }
+    return true;
   }catch(e){
-    console.error("Save error:",e);
+    alert("FETCH ERROR: "+e.message);
     return false;
   }
 };
