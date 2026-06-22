@@ -41,10 +41,13 @@ const saveOrder=async(orderData)=>{
         "Content-Type":"application/json",
         "apikey":SUPABASE_KEY,
         "Authorization":`Bearer ${SUPABASE_KEY}`,
-        "Prefer":"return=minimal"
+        "Prefer":"return=representation"
       },
       body:JSON.stringify(orderData)
     });
+    const text=await res.text();
+    console.log("STATUS:",res.status);
+    console.log("SUPABASE:",text);
     return res.ok;
   }catch(e){
     console.error("Save error:",e);
@@ -133,7 +136,7 @@ function App(){
       phone:form.phone,
       address:form.address,
       items:cart.map(x=>`${x.name} x${x.qty}`).join(", "),
-      total:total,
+      total:String(total),
       payment_method:"USDT TRC20",
       status:"pending"
     };
