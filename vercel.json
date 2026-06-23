@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "api/cj-token.js": { "memory": 128, "maxDuration": 10 },
+    "api/products.js": { "memory": 256, "maxDuration": 15 },
+    "api/orders.js":   { "memory": 256, "maxDuration": 20 }
+  },
+  "rewrites": [
+    { "source": "/api/cj-token", "destination": "/api/cj-token.js" },
+    { "source": "/api/products", "destination": "/api/products.js" },
+    { "source": "/api/orders",   "destination": "/api/orders.js" }
+  ]
+}
