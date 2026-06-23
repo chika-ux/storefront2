@@ -45,15 +45,8 @@ const saveOrder=async(orderData)=>{
       },
       body:JSON.stringify(orderData)
     });
-    const text=await res.text();
-    if(!res.ok){
-      // Show error visibly on screen
-      alert("ERROR "+res.status+": "+text);
-      return false;
-    }
-    return true;
+    return res.ok;
   }catch(e){
-    alert("FETCH ERROR: "+e.message);
     return false;
   }
 };
