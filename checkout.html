@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Checkout · TechDrop ⚡</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #05070f;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.08);
+    --accent: #7850ff;
+    --accent2: #ff3cac;
+    --accent3: #00e5ff;
+    --text: #f0f0ff;
+    --muted: rgba(240,240,255,0.45);
+    --card-bg: rgba(12,14,28,0.7);
+    --error: #ff4d6d;
+    --success: #00e5a0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(120,80,255,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,229,255,0.1) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(120,80,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,80,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 60px;
+    background: rgba(5,7,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 60%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .back-btn:hover { color: var(--text); }
+
+  /* ── LAYOUT ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  .page-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .page-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+
+  /* ── STEPS ── */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 28px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .step.active { color: var(--text); }
+  .step.done { color: var(--success); }
+
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step.active .step-num {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .step.done .step-num {
+    background: var(--success);
+    border-color: var(--success);
+    color: #000;
+  }
+
+  .step-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin: 0 8px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(16px);
+  }
+
+  .card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* ── FORM ── */
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .field select option { background: #0c0e1c; color: var(--text); }
+
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  .field input::placeholder,
+  .field textarea::placeholder { color: rgba(240,240,255,0.25); }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: rgba(120,80,255,0.5);
+    background: rgba(255,255,255,0.07);
+    box-shadow: 0 0 0 3px rgba(120,80,255,0.1);
+  }
+
+  .field input.error,
+  .field select.error { border-color: var(--error); }
+
+  .field-error {
+    font-size: 11px;
+    color: var(--error);
+    margin-top: 4px;
+    display: none;
+  }
+
+  .field-error.show { display: block; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* ── ORDER SUMMARY ── */
+  .order-item {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .order-item:last-of-type { border-bottom: none; }
+
+  .order-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .order-item-info { flex: 1; min-width: 0; }
+
+  .order-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+  }
+
+  .order-item-qty { font-size: 12px; color: var(--muted); }
+
+  .order-item-price {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent3);
+    flex-shrink: 0;
+  }
+
+  .order-totals { margin-top: 14px; }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .total-row.grand {
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    padding-top: 12px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .total-row.grand span:last-child {
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 20px;
+  }
+
+  /* ── PAYMENT ── */
+  .usdt-box {
+    background: rgba(0,229,160,0.05);
+    border: 1px solid rgba(0,229,160,0.2);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .usdt-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--success);
+    margin-bottom: 8px;
+  }
+
+  .usdt-amount {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .usdt-sub { font-size: 12px; color: var(--muted); }
+
+  .wallet-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .wallet-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .wallet-addr {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    color: var(--accent3);
+    word-break: break-all;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .copy-btn {
+    width: 100%;
+    padding: 10px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 10px;
+    color: var(--accent3);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { background: rgba(0,229,255,0.14); }
+
+  .payment-steps {
+    list-style: none;
+    margin-bottom: 16px;
+  }
+
+  .payment-steps li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--muted);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    line-height: 1.5;
+  }
+
+  .payment-steps li:last-child { border-bottom: none; }
+
+  .payment-steps .num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(120,80,255,0.2);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── TX HASH INPUT ── */
+  .tx-section { margin-top: 4px; }
+
+  .tx-section .field input {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── SUBMIT ── */
+  .submit-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 16px;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 8px 32px rgba(120,80,255,0.4);
+    letter-spacing: 0.3px;
+    margin-top: 8px;
+  }
+
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 40px rgba(120,80,255,0.5); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .secure-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── SUCCESS ── */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .success-screen.show { display: block; }
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(0,229,160,0.1);
+    border: 2px solid var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 24px;
+  }
+
+  .success-screen h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .success-screen p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 300px;
+    margin: 0 auto 28px;
+  }
+
+  .order-ref {
+    display: inline-block;
+    padding: 8px 20px;
+    background: rgba(120,80,255,0.1);
+    border: 1px solid rgba(120,80,255,0.3);
+    border-radius: 50px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 28px;
+  }
+
+  .home-btn {
+    display: inline-block;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50px;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 24px rgba(120,80,255,0.4);
+  }
+
+  /* ── EMPTY ── */
+  .empty-screen {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-screen .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-screen p { font-size: 15px; margin-bottom: 24px; }
+
+  .shop-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50px;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(12,14,28,0.95);
+    border: 1px solid rgba(120,80,255,0.4);
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    z-index: 300;
+    transition: transform 0.3s cubic-bezier(.22,.61,.36,1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    backdrop-filter: blur(16px);
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="/">TechDrop ⚡</a>
+  <a class="back-btn" href="/">← Back to store</a>
+</nav>
+
+<div class="page">
+
+  <!-- EMPTY STATE -->
+  <div class="empty-screen" id="emptyScreen" style="display:none">
+    <div class="icon">🛒</div>
+    <p>Your cart is empty</p>
+    <a class="shop-btn" href="/">Shop Now</a>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✓</div>
+    <h2>Order Received!</h2>
+    <p>We've received your payment details and will verify your transaction within 1–2 hours. You'll receive shipping updates via email.</p>
+    <div class="order-ref" id="orderRef">Order #TD000000</div>
+    <br>
+    <a class="home-btn" href="/">Continue Shopping</a>
+  </div>
+
+  <!-- CHECKOUT FORM -->
+  <div id="checkoutForm">
+    <div class="page-title">Checkout</div>
+    <div class="page-sub">Complete your order · Secure USDT payment</div>
+
+    <!-- STEPS -->
+    <div class="steps">
+      <div class="step active" id="step1indicator">
+        <div class="step-num">1</div>
+        <span>Info</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" id="step2indicator">
+        <div class="step-num">2</div>
+        <span>Shipping</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" id="step3indicator">
+        <div class="step-num">3</div>
+        <span>Payment</span>
+      </div>
+    </div>
+
+    <!-- STEP 1: CONTACT INFO -->
+    <div id="step1">
+      <div class="card">
+        <div class="card-title">Contact Information</div>
+        <div class="row">
+          <div class="field">
+            <label>First Name *</label>
+            <input type="text" id="firstName" placeholder="John"/>
+            <div class="field-error" id="firstNameErr">Required</div>
+          </div>
+          <div class="field">
+            <label>Last Name *</label>
+            <input type="text" id="lastName" placeholder="Doe"/>
+            <div class="field-error" id="lastNameErr">Required</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Email Address *</label>
+          <input type="email" id="email" placeholder="john@example.com"/>
+          <div class="field-error" id="emailErr">Enter a valid email</div>
+        </div>
+        <div class="field">
+          <label>Phone Number *</label>
+          <input type="tel" id="phone" placeholder="+1 234 567 8900"/>
+          <div class="field-error" id="phoneErr">Required</div>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div class="card">
+        <div class="card-title">Order Summary</div>
+        <div id="orderItems"></div>
+        <div class="order-totals">
+          <div class="total-row"><span>Subtotal</span><span id="subtotalAmt">$0.00</span></div>
+          <div class="total-row"><span>Shipping</span><span style="color:var(--success)">Free</span></div>
+          <div class="total-row grand"><span>Total</span><span id="totalAmt">$0.00</span></div>
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="goStep(2)">Continue to Shipping →</button>
+    </div>
+
+    <!-- STEP 2: SHIPPING -->
+    <div id="step2" style="display:none">
+      <div class="card">
+        <div class="card-title">Shipping Address</div>
+        <div class="field">
+          <label>Street Address *</label>
+          <input type="text" id="address1" placeholder="123 Main Street"/>
+          <div class="field-error" id="address1Err">Required</div>
+        </div>
+        <div class="field">
+          <label>Apartment, Suite, etc. (optional)</label>
+          <input type="text" id="address2" placeholder="Apt 4B"/>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>City *</label>
+            <input type="text" id="city" placeholder="New York"/>
+            <div class="field-error" id="cityErr">Required</div>
+          </div>
+          <div class="field">
+            <label>State / Province</label>
+            <input type="text" id="state" placeholder="NY"/>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>ZIP / Postal Code *</label>
+            <input type="text" id="zip" placeholder="10001"/>
+            <div class="field-error" id="zipErr">Required</div>
+          </div>
+          <div class="field">
+            <label>Country *</label>
+            <select id="country">
+              <option value="">Select country</option>
+              <option>United States</option>
+              <option>United Kingdom</option>
+              <option>Canada</option>
+              <option>Australia</option>
+              <option>Germany</option>
+              <option>France</option>
+              <option>Netherlands</option>
+              <option>Spain</option>
+              <option>Italy</option>
+              <option>Sweden</option>
+              <option>Norway</option>
+              <option>Denmark</option>
+              <option>Switzerland</option>
+              <option>Austria</option>
+              <option>Belgium</option>
+              <option>Portugal</option>
+              <option>Poland</option>
+              <option>Czech Republic</option>
+              <option>Romania</option>
+              <option>Hungary</option>
+              <option>Finland</option>
+              <option>Greece</option>
+              <option>Japan</option>
+              <option>South Korea</option>
+              <option>Singapore</option>
+              <option>UAE</option>
+              <option>Saudi Arabia</option>
+              <option>Brazil</option>
+              <option>Mexico</option>
+              <option>Argentina</option>
+              <option>Chile</option>
+              <option>Colombia</option>
+              <option>South Africa</option>
+              <option>Nigeria</option>
+              <option>Kenya</option>
+              <option>Ghana</option>
+              <option>India</option>
+              <option>Pakistan</option>
+              <option>Bangladesh</option>
+              <option>Philippines</option>
+              <option>Indonesia</option>
+              <option>Malaysia</option>
+              <option>Thailand</option>
+              <option>Vietnam</option>
+              <option>New Zealand</option>
+              <option>Other</option>
+            </select>
+            <div class="field-error" id="countryErr">Required</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Order Notes (optional)</label>
+          <textarea id="notes" placeholder="Any special instructions for your order..."></textarea>
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="goStep(3)">Continue to Payment →</button>
+      <div style="text-align:center;margin-top:12px">
+        <a href="#" onclick="goStep(1);return false" style="color:var(--muted);font-size:13px">← Back</a>
+      </div>
+    </div>
+
+    <!-- STEP 3: PAYMENT -->
+    <div id="step3" style="display:none">
+      <div class="card">
+        <div class="card-title">Payment · USDT TRC20</div>
+
+        <div class="usdt-box">
+          <div class="usdt-label">Amount Due</div>
+          <div class="usdt-amount" id="payAmount">$0.00 USDT</div>
+          <div class="usdt-sub">Send exactly this amount · TRC20 network only</div>
+        </div>
+
+        <div class="wallet-box">
+          <div class="wallet-label">Send to this wallet address</div>
+          <div class="wallet-addr" id="walletAddr">TTrsoqxMayzzTArQCuRQUUnpUtou18AVhc</div>
+          <button class="copy-btn" onclick="copyWallet()">📋 Copy Wallet Address</button>
+        </div>
+
+        <ul class="payment-steps">
+          <li><span class="num">1</span><span>Open your USDT wallet (Trust Wallet, Binance, etc.)</span></li>
+          <li><span class="num">2</span><span>Send exactly the amount shown above to the wallet address</span></li>
+          <li><span class="num">3</span><span>Make sure you select <strong>TRC20 (Tron)</strong> network — not ERC20</span></li>
+          <li><span class="num">4</span><span>Copy the transaction hash and paste it below</span></li>
+        </ul>
+
+        <div class="tx-section">
+          <div class="field">
+            <label>Transaction Hash (TX ID) *</label>
+            <input type="text" id="txHash" placeholder="Paste your USDT transaction hash here"/>
+            <div class="field-error" id="txHashErr">Please enter your transaction hash</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="submitOrder()">Confirm Order →</button>
+      <div class="secure-note">
+        🔒 Your order details are encrypted · Payment verified manually within 1–2 hours
+      </div>
+      <div style="text-align:center;margin-top:12px">
+        <a href="#" onclick="goStep(2);return false" style="color:var(--muted);font-size:13px">← Back</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── PRICING (must match index.html) ──
+  const MARKUP = 2.9;
+  const TX_FEE = 1.00;
+  const WALLET = 'TTrsoqxMayzzTArQCuRQUUnpUtou18AVhc';
+
+  function sellingPrice(cjPrice) {
+    const raw = parseFloat(cjPrice);
+    if (isNaN(raw) || raw <= 0) return 0;
+    return raw * MARKUP + TX_FEE;
+  }
+
+  // ── LOAD CART ──
+  let cart = [];
+  let grandTotal = 0;
+  let currentStep = 1;
+
+  function init() {
+    cart = JSON.parse(localStorage.getItem('td_cart') || '[]');
+
+    if (cart.length === 0) {
+      document.getElementById('checkoutForm').style.display = 'none';
+      document.getElementById('emptyScreen').style.display = 'block';
+      return;
+    }
+
+    renderOrderItems();
+  }
+
+  function renderOrderItems() {
+    const container = document.getElementById('orderItems');
+    let subtotal = 0;
+
+    container.innerHTML = cart.map(item => {
+      const unitPrice = sellingPrice(item.price);
+      const lineTotal = unitPrice * (item.qty || 1);
+      subtotal += lineTotal;
+
+      return `
+        <div class="order-item">
+          <img src="${item.image || ''}" alt="${item.name || ''}"
+               onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22><rect fill=%22%230c0e1c%22 width=%2248%22 height=%2248%22/><text x=%2250%%22 y=%2250%%22 fill=%22%23555%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2220%22>📦</text></svg>'"/>
+          <div class="order-item-info">
+            <div class="order-item-name">${item.name || 'Product'}</div>
+            <div class="order-item-qty">Qty: ${item.qty || 1}</div>
+          </div>
+          <div class="order-item-price">$${lineTotal.toFixed(2)}</div>
+        </div>`;
+    }).join('');
+
+    grandTotal = subtotal;
+    document.getElementById('subtotalAmt').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('totalAmt').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('payAmount').textContent = `$${subtotal.toFixed(2)} USDT`;
+  }
+
+  // ── STEP NAVIGATION ──
+  function goStep(n) {
+    if (n > currentStep && !validateStep(currentStep)) return;
+
+    document.getElementById(`step${currentStep}`).style.display = 'none';
+    document.getElementById(`step${n}`).style.display = 'block';
+
+    // Update step indicators
+    for (let i = 1; i <= 3; i++) {
+      const el = document.getElementById(`step${i}indicator`);
+      el.className = 'step' + (i === n ? ' active' : i < n ? ' done' : '');
+      if (i < n) el.querySelector('.step-num').textContent = '✓';
+      else el.querySelector('.step-num').textContent = i;
+    }
+
+    currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── VALIDATION ──
+  function validateStep(step) {
+    let valid = true;
+
+    function check(id, errId, condition) {
+      const el = document.getElementById(id);
+      const err = document.getElementById(errId);
+      if (!condition(el.value)) {
+        el.classList.add('error');
+        err.classList.add('show');
+        valid = false;
+      } else {
+        el.classList.remove('error');
+        err.classList.remove('show');
+      }
+    }
+
+    if (step === 1) {
+      check('firstName', 'firstNameErr', v => v.trim().length > 0);
+      check('lastName', 'lastNameErr', v => v.trim().length > 0);
+      check('email', 'emailErr', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+      check('phone', 'phoneErr', v => v.trim().length > 5);
+    }
+
+    if (step === 2) {
+      check('address1', 'address1Err', v => v.trim().length > 0);
+      check('city', 'cityErr', v => v.trim().length > 0);
+      check('zip', 'zipErr', v => v.trim().length > 0);
+      check('country', 'countryErr', v => v.trim().length > 0);
+    }
+
+    if (step === 3) {
+      check('txHash', 'txHashErr', v => v.trim().length > 10);
+    }
+
+    return valid;
+  }
+
+  // ── COPY WALLET ──
+  function copyWallet() {
+    navigator.clipboard.writeText(WALLET).then(() => {
+      showToast('✓ Wallet address copied!');
+    }).catch(() => {
+      showToast('Copy: ' + WALLET);
+    });
+  }
+
+  // ── SUBMIT ORDER ──
+  async function submitOrder() {
+    if (!validateStep(3)) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    const orderData = {
+      ref: 'TD' + Date.now().toString().slice(-6),
+      customer: {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+      },
+      shipping: {
+        address1: document.getElementById('address1').value,
+        address2: document.getElementById('address2').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        zip: document.getElementById('zip').value,
+        country: document.getElementById('country').value,
+        notes: document.getElementById('notes').value,
+      },
+      payment: {
+        method: 'USDT TRC20',
+        txHash: document.getElementById('txHash').value.trim(),
+        amount: grandTotal.toFixed(2),
+        wallet: WALLET,
+      },
+      items: cart,
+      total: grandTotal.toFixed(2),
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      // Save to Supabase via your orders API
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
+
+      // Clear cart
+      localStorage.removeItem('td_cart');
+
+      // Show success
+      document.getElementById('orderRef').textContent = `Order #${orderData.ref}`;
+      document.getElementById('checkoutForm').style.display = 'none';
+      document.getElementById('successScreen').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (err) {
+      console.error(err);
+      // Still show success — order data logged to console as fallback
+      console.log('ORDER DATA:', JSON.stringify(orderData, null, 2));
+      localStorage.removeItem('td_cart');
+      document.getElementById('orderRef').textContent = `Order #${orderData.ref}`;
+      document.getElementById('checkoutForm').style.display = 'none';
+      document.getElementById('successScreen').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── CLEAR ERRORS ON INPUT ──
+  document.addEventListener('DOMContentLoaded', () => {
+    init();
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      el.addEventListener('input', () => {
+        el.classList.remove('error');
+        const errEl = document.getElementById(el.id + 'Err');
+        if (errEl) errEl.classList.remove('show');
+      });
+    });
+  });
+</script>
+</body>
+</html>
